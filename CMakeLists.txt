@@ -31,6 +31,10 @@ set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads REQUIRED)
 
+find_package(GTSAM REQUIRED QUIET)
+include_directories(${GTSAM_INCLUDE_DIR})
+message("GTSAM VERSION: ${GTSAM_VERSION}")
+
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
@@ -45,6 +49,7 @@ include_directories(
   include
   ${EIGEN3_INLCUDE_DIRS}
   ${PCL_INLCUDE_DIRS}
+  ${GTSAM_INCLUDE_DIR}
 )
 
 # Not all machines have <cpuid.h> available
@@ -92,6 +97,7 @@ target_include_directories(scan_context
 add_library(${PROJECT_NAME} 
             include/fast_limo/Modules/Localizer.cpp
             include/fast_limo/Modules/Mapper.cpp
+            include/fast_limo/Modules/Looper.cpp
 
             include/fast_limo/Objects/State.cpp
             include/fast_limo/Objects/Plane.cpp

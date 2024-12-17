@@ -22,7 +22,7 @@ void state_callback(const nav_msgs::msg::Odometry::SharedPtr msg){
 
 void cloud_callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg){
 
-    pcl::PointCloud<PointType>::Ptr pc_ (boost::make_shared<pcl::PointCloud<PointType>>());
+    pcl::PointCloud<PointType>::Ptr pc_ (std::make_shared<pcl::PointCloud<PointType>>());
     pcl::fromROSMsg(*msg, *pc_);
 
     // Update iSAM
