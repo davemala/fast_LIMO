@@ -5,7 +5,7 @@ project(fast_limo)
 add_compile_options(-std=c++17)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
+  # add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
 set(CMAKE_BUILD_TYPE "Release")
@@ -79,6 +79,15 @@ target_include_directories(ikfom
   PUBLIC include/IKFoM/ include/IKFoM/IKFoM_toolkit 
 )
 
+# Scan Context
+add_library(scan_context
+            include/Scancontext/scancontext.cpp
+          )
+target_link_libraries(scan_context ${PCL_LIBRARIES} ${OpenMP_LIBS})
+target_include_directories(scan_context
+  PUBLIC include/Scancontext/
+)
+
 # Fast LIMO
 add_library(${PROJECT_NAME} 
             include/fast_limo/Modules/Localizer.cpp
@@ -97,6 +106,12 @@ add_executable(${PROJECT_NAME}_multi_exec
               )
 ament_target_dependencies(${PROJECT_NAME}_multi_exec rclcpp sensor_msgs geometry_msgs visualization_msgs nav_msgs tf2 tf2_ros pcl_conversions)
 target_link_libraries(${PROJECT_NAME}_multi_exec ${PROJECT_NAME} ${PCL_LIBRARIES})
+
+add_executable(${PROJECT_NAME}_loop_exec
+              src/loop.cpp
+              )
+ament_target_dependencies(${PROJECT_NAME}_loop_exec rclcpp sensor_msgs geometry_msgs visualization_msgs nav_msgs tf2 tf2_ros pcl_conversions)
+target_link_libraries(${PROJECT_NAME}_loop_exec ${PROJECT_NAME} ${PCL_LIBRARIES})
 
 # Binaries
 install( TARGETS 
