@@ -1,20 +1,3 @@
-/*
- Copyright (c) 2024 Oriol Martínez @fetty31
-
- This program is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program. If not, see <https://www.gnu.org/licenses/>.
- */
-
 #include "LimoWrapper.hpp"
 
 namespace ros2wrap {
@@ -311,15 +294,17 @@ namespace ros2wrap {
         out.q = qd.cast<float>();
     }
 
-    void fromROStoLimo(const nav_msgs::msg::Odometry::ConstPtr& in, fast_limo::State& out){
+    void fromROStoLimo(const nav_msgs::msg::Odometry::SharedPtr& in, fast_limo::State& out){
         out.time = in->header.stamp.sec;
 
         out.p(0) = in->pose.pose.position.x;
         out.p(1) = in->pose.pose.position.y;
         out.p(2) = in->pose.pose.position.z;
 
-        Eigen::Quaterniond qd;
-        tf2::fromMsg(in->pose.pose.orientation, qd);
+        Eigen::Quaterniond qd(in->pose.pose.orientation.w, 
+                      in->pose.pose.orientation.x, 
+                      in->pose.pose.orientation.y, 
+                      in->pose.pose.orientation.z);
         out.q = qd.cast<float>();
 
         out.v(0) = in->twist.twist.linear.x;
@@ -472,17 +457,3 @@ namespace ros2wrap {
     }
 
 } // namespace ros2wrap
-
-int main(int argc, char * argv[])
-{
-    rclcpp::init(argc, argv);
-
-    rclcpp::Node::SharedPtr limo = std::make_shared<ros2wrap::LimoWrapper>();
-
-    rclcpp::executors::MultiThreadedExecutor executor; // by default using all available cores
-    executor.add_node(limo);
-    executor.spin();
-
-    rclcpp::shutdown();
-    return 0;
-}

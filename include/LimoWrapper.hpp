@@ -49,7 +49,7 @@ private:
 
 // Conversion utility methods
 void fromROStoLimo(const sensor_msgs::msg::Imu& in, fast_limo::IMUmeas& out);
-void fromROStoLimo(const nav_msgs::msg::Odometry::ConstPtr& in, fast_limo::State& out);
+void fromROStoLimo(const nav_msgs::msg::Odometry::SharedPtr& in, fast_limo::State& out);
 void fromLimoToROS(const fast_limo::State& in, nav_msgs::msg::Odometry& out);
 void fromLimoToROS(const fast_limo::State& in, 
                     const std::vector<double>& cov_pose,
