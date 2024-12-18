@@ -1,4 +1,4 @@
-#include "ROSutils.hpp"
+#include "LimoWrapper.hpp"
 
 #include <std_msgs/msg/float32.hpp>
 #include <std_msgs/msg/int32.hpp>
@@ -16,7 +16,7 @@ std::string world_frame, body_frame;
 void state_callback(const nav_msgs::msg::Odometry::SharedPtr msg){
 
     // Save state
-    tf_limo::fromROStoLimo(msg, st);
+    ros2wrap::fromROStoLimo(msg, st);
 
 }
 
@@ -44,41 +44,82 @@ void mySIGhandler(int sig){
 
 void load_config(std::shared_ptr<rclcpp::Node> node, fast_limo::LoopConfig* config){
 
-    node->get_parameter_or("topics.input.GPSfix", config->topics.gnss_fix, std::string("/gps/fix"));
+    node->declare_parameter<std::string>("topics.input.GPSfix", "/gps/fix");
+    node->get_parameter("topics.input.GPSfix", config->topics.gnss_fix);
 
-    node->get_parameter_or("ScanContext.NUM_EXCLUDE_RECENT", config->scancontext.NUM_EXCLUDE_RECENT, 50);
-    node->get_parameter_or("ScanContext.NUM_CANDIDATES_FROM_TREE", config->scancontext.NUM_CANDIDATES_FROM_TREE, 10);
-    node->get_parameter_or("ScanContext.PC_NUM_RING", config->scancontext.PC_NUM_RING, 20);
-    node->get_parameter_or("ScanContext.PC_NUM_SECTOR", config->scancontext.PC_NUM_SECTOR, 60);
-    node->get_parameter_or("ScanContext.PC_MAX_RADIUS", config->scancontext.PC_MAX_RADIUS, 80.0f);
-    node->get_parameter_or("ScanContext.SC_THRESHOLD", config->scancontext.SC_THRESHOLD, 0.2f);
-    node->get_parameter_or("ScanContext.SEARCH_RATIO", config->scancontext.SEARCH_RATIO, 0.1f);
+    node->declare_parameter<int>("ScanContext.NUM_EXCLUDE_RECENT", 50);
+    node->get_parameter("ScanContext.NUM_EXCLUDE_RECENT", config->scancontext.NUM_EXCLUDE_RECENT);
 
-    node->get_parameter_or("RadiusSearch.RADIUS", config->radiussearch.RADIUS, 10.0f);
-    node->get_parameter_or("RadiusSearch.active", config->radiussearch.active, true);
+    node->declare_parameter<int>("ScanContext.NUM_CANDIDATES_FROM_TREE", 10);
+    node->get_parameter("ScanContext.NUM_CANDIDATES_FROM_TREE", config->scancontext.NUM_CANDIDATES_FROM_TREE);
 
-    node->get_parameter_or("PoseGraph.MinNumStates", config->posegraph.min_num_states, 3);
-    node->get_parameter_or("PoseGraph.Covariances.Prior", config->posegraph.prior_cov, std::vector<double>(6, 1.e-12));
-    node->get_parameter_or("PoseGraph.Covariances.Odom", config->posegraph.odom_cov, std::vector<double>(6, 1.e-6));
-    node->get_parameter_or("PoseGraph.Covariances.GPS", config->posegraph.gnss_cov, std::vector<double>{1.e9, 1.e9, 0.01});
-    node->get_parameter_or("PoseGraph.Covariances.Loop", config->posegraph.loop_cov, std::vector<double>(6, 0.5));
+    node->declare_parameter<int>("ScanContext.PC_NUM_RING", 20);
+    node->get_parameter("ScanContext.PC_NUM_RING", config->scancontext.PC_NUM_RING);
 
-    node->get_parameter_or("ICP.MAX_DIST", config->icp.MAX_DIST, 150.0f);
-    node->get_parameter_or("ICP.TF_EPSILON", config->icp.TF_EPSILON, 1.e-6f);
-    node->get_parameter_or("ICP.EUC_FIT_EPSILON", config->icp.EUC_FIT_EPSILON, 1.e-6);
-    node->get_parameter_or("ICP.FIT_SCORE", config->icp.FIT_SCORE, 0.3f);
-    node->get_parameter_or("ICP.RANSAC_ITERS", config->icp.RANSAC_ITERS, 0);
-    node->get_parameter_or("ICP.WINDOW_SIZE", config->icp.WINDOW_SIZE, 20);
-    node->get_parameter_or("ICP.MAX_ITERS", config->icp.MAX_ITERS, 100);
+    node->declare_parameter<int>("ScanContext.PC_NUM_SECTOR", 60);
+    node->get_parameter("ScanContext.PC_NUM_SECTOR", config->scancontext.PC_NUM_SECTOR);
+
+    node->declare_parameter<float>("ScanContext.PC_MAX_RADIUS", 80.0f);
+    node->get_parameter("ScanContext.PC_MAX_RADIUS", config->scancontext.PC_MAX_RADIUS);
+
+    node->declare_parameter<float>("ScanContext.SC_THRESHOLD", 0.2f);
+    node->get_parameter("ScanContext.SC_THRESHOLD", config->scancontext.SC_THRESHOLD);
+
+    node->declare_parameter<float>("ScanContext.SEARCH_RATIO", 0.1f);
+    node->get_parameter("ScanContext.SEARCH_RATIO", config->scancontext.SEARCH_RATIO);
+
+    node->declare_parameter<float>("RadiusSearch.RADIUS", 10.0f);
+    node->get_parameter("RadiusSearch.RADIUS", config->radiussearch.RADIUS);
+
+    node->declare_parameter<bool>("RadiusSearch.active", true);
+    node->get_parameter("RadiusSearch.active", config->radiussearch.active);
+
+    node->declare_parameter<int>("PoseGraph.MinNumStates", 3);
+    node->get_parameter("PoseGraph.MinNumStates", config->posegraph.min_num_states);
+
+    node->declare_parameter<std::vector<double>>("PoseGraph.Covariances.Prior", std::vector<double>(6, 1.e-12));
+    node->get_parameter("PoseGraph.Covariances.Prior", config->posegraph.prior_cov);
+
+    node->declare_parameter<std::vector<double>>("PoseGraph.Covariances.Odom", std::vector<double>(6, 1.e-6));
+    node->get_parameter("PoseGraph.Covariances.Odom", config->posegraph.odom_cov);
+
+    node->declare_parameter<std::vector<double>>("PoseGraph.Covariances.GPS", std::vector<double>{1.e9, 1.e9, 0.01});
+    node->get_parameter("PoseGraph.Covariances.GPS", config->posegraph.gnss_cov);
+
+    node->declare_parameter<std::vector<double>>("PoseGraph.Covariances.Loop", std::vector<double>(6, 0.5));
+    node->get_parameter("PoseGraph.Covariances.Loop", config->posegraph.loop_cov);
+
+    node->declare_parameter<float>("ICP.MAX_DIST", 150.0f);
+    node->get_parameter("ICP.MAX_DIST", config->icp.MAX_DIST);
+
+    node->declare_parameter<float>("ICP.TF_EPSILON", 1.e-6f);
+    node->get_parameter("ICP.TF_EPSILON", config->icp.TF_EPSILON);
+
+    node->declare_parameter<double>("ICP.EUC_FIT_EPSILON", 1.e-6);
+    node->get_parameter("ICP.EUC_FIT_EPSILON", config->icp.EUC_FIT_EPSILON);
+
+    node->declare_parameter<float>("ICP.FIT_SCORE", 0.3f);
+    node->get_parameter("ICP.FIT_SCORE", config->icp.FIT_SCORE);
+
+    node->declare_parameter<int>("ICP.RANSAC_ITERS", 0);
+    node->get_parameter("ICP.RANSAC_ITERS", config->icp.RANSAC_ITERS);
+
+    node->declare_parameter<int>("ICP.WINDOW_SIZE", 20);
+    node->get_parameter("ICP.WINDOW_SIZE", config->icp.WINDOW_SIZE);
+
+    node->declare_parameter<int>("ICP.MAX_ITERS", 100);
+    node->get_parameter("ICP.MAX_ITERS", config->icp.MAX_ITERS);
 
     float diff_norm, diff_yaw;
-    node->get_parameter_or("KeyFrames.Odom.DIFF_NORM", diff_norm, 1.5f);
-    node->get_parameter_or("KeyFrames.Odom.DIFF_YAW", diff_yaw, 0.5f);
+    node->declare_parameter<float>("KeyFrames.Odom.DIFF_NORM", 1.5f);
+    node->declare_parameter<float>("KeyFrames.Odom.DIFF_YAW", 0.5f);
+    node->get_parameter("KeyFrames.Odom.DIFF_NORM", diff_norm);
+    node->get_parameter("KeyFrames.Odom.DIFF_YAW", diff_yaw);
     std::pair<float, float> odom_diff = {diff_norm, diff_yaw};
     config->kf.odom_diff = odom_diff;
 
-    node->get_parameter_or("KeyFrames.GPS.DIFF_NORM", config->kf.gnss_diff, 2.5f);
-
+    node->declare_parameter<float>("KeyFrames.GPS.DIFF_NORM", 2.5f);
+    node->get_parameter("KeyFrames.GPS.DIFF_NORM", config->kf.gnss_diff);
 }
 
 int main(int argc, char** argv) {
@@ -128,7 +169,7 @@ int main(int argc, char** argv) {
 
         if(LOOP.solve()){
 
-            tf_limo::fromLimoToROS(LOOP.get_state(), state_msg);
+            ros2wrap::fromLimoToROS(LOOP.get_state(), state_msg);
             loop_pub->publish(state_msg);
 
             // Debug 
@@ -153,8 +194,8 @@ int main(int argc, char** argv) {
             kf_cloud_pub->publish(pc_msg);
 
                 // Corrected KF states
-            visualization_msgs::msg::Marker st_msg = visualize_limo::getKfMarker(state_vec, world_frame);
-            st_marker_pub->publish(st_msg);
+            // visualization_msgs::msg::Marker st_msg = visualize_limo::getKfMarker(state_vec, world_frame);
+            // st_marker_pub->publish(st_msg);
 
                 // Scan Context result
             sc_msg.data = LOOP.getScanContextResult();
