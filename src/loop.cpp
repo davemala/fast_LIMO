@@ -143,9 +143,9 @@ int main(int argc, char** argv) {
     // Define subscribers & publishers
     auto state_sub = node->create_subscription<nav_msgs::msg::Odometry>("/fast_limo/state", 1, state_callback);
     auto pc_sub = node->create_subscription<sensor_msgs::msg::PointCloud2>("/fast_limo/pointcloud", 1, cloud_callback);
-    auto gnss_sub = node->create_subscription<sensor_msgs::msg::NavSatFix>("/kitti/oxts/gps/fix", 1, gnss_callback);
+    auto gnss_sub = node->create_subscription<sensor_msgs::msg::NavSatFix>(config.topics.gnss_fix, 1, gnss_callback);
 
-    loop_pub = node->create_publisher<nav_msgs::msg::Odometry>("state", 1);
+    loop_pub = node->create_publisher<nav_msgs::msg::Odometry>("/fast_limo/loop_closure/odom", 1);
 
     // Debug
     auto kf_cloud_pub = node->create_publisher<sensor_msgs::msg::PointCloud2>("kf/pointcloud", 1);
@@ -163,7 +163,7 @@ int main(int argc, char** argv) {
     std_msgs::msg::Float32 sc_msg;
     std_msgs::msg::Int32 sc_idx_msg;
 
-    rclcpp::Rate r(10.0);
+    rclcpp::Rate r(100.0);
     while(rclcpp::ok()){
         rclcpp::spin_some(node);
 
@@ -186,7 +186,7 @@ int main(int argc, char** argv) {
                 state_vec.push_back(kfs[i].first);
             }
 
-                // Pointcloud map from KFs
+            // Pointcloud map from KFs
             sensor_msgs::msg::PointCloud2 pc_msg;
             pcl::toROSMsg(pc, pc_msg);
             pc_msg.header.stamp = node->now();
@@ -194,8 +194,8 @@ int main(int argc, char** argv) {
             kf_cloud_pub->publish(pc_msg);
 
                 // Corrected KF states
-            // visualization_msgs::msg::Marker st_msg = visualize_limo::getKfMarker(state_vec, world_frame);
-            // st_marker_pub->publish(st_msg);
+            visualization_msgs::msg::Marker st_msg = ros2wrapper::getKfMarker(state_vec, world_frame);
+            st_marker_pub->publish(st_msg);
 
                 // Scan Context result
             sc_msg.data = LOOP.getScanContextResult();

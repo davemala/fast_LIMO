@@ -133,6 +133,10 @@ install( TARGETS
   ${PROJECT_NAME}_multi_exec
   DESTINATION lib/${PROJECT_NAME} )
 
+install( TARGETS
+  ${PROJECT_NAME}_loop_exec
+  DESTINATION lib/${PROJECT_NAME} )
+
 # Install launch files.
 install(DIRECTORY
   launch
