@@ -194,8 +194,8 @@ int main(int argc, char** argv) {
             kf_cloud_pub->publish(pc_msg);
 
                 // Corrected KF states
-            visualization_msgs::msg::Marker st_msg = ros2wrapper::getKfMarker(state_vec, world_frame);
-            st_marker_pub->publish(st_msg);
+            //visualization_msgs::msg::Marker st_msg = ros2wrap::getKfMarker(state_vec, world_frame);
+            //st_marker_pub->publish(st_msg);
 
                 // Scan Context result
             sc_msg.data = LOOP.getScanContextResult();
